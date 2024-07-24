@@ -130,7 +130,7 @@ if (nrow(df.kmd) == length(unique(df.kmd$HS_num))) {
             
   stop(glue("\nThe df.kmd dataframe has {nrow(df.kmd)} rows, and {length(unique(df.kmd$HS_num))} unique homologous series.\n
   This means there are no homologous series detected in the sample.\n
-  view the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_HS_series.csv for more information."))
+  view the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_series.csv for more information."))
 }
 
 
@@ -177,8 +177,8 @@ for (i in 1:nrow(df.susp.list)) {
     # Ensure the row indices are within bounds
     if (min_row_pos <= nrow(matched_rows)) {
       # Debugging prints to verify indices
-      start_col <- ncol(df.kmd) -1
-      end_col <- (ncol(df.kmd) + ncol(df.susp.list)) -2
+      start_col <- ncol(df.kmd) -1 ####Change here if columns names and values are mismatched in output
+      end_col <- (ncol(df.kmd) + ncol(df.susp.list)) -2 ####Change here if columns names and values are mismatched in output
       # print(paste("Matching row:", min_row_pos))
       # print(paste("Assigning columns from", start_col, "to", end_col))
       
