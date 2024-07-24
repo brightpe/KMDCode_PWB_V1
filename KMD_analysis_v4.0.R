@@ -141,6 +141,17 @@ df.kmd <- KMD_FUN (df$mz,
 write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"nofilt.csv",sep=""),sep=",", 
             append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
 
+
+if (nrow(df.kmd) == length(unique(df.kmd$HS_num))) {
+  write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_HS_series.csv",sep=""),sep=",", 
+            append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
+            
+  stop(glue("\nThe df.kmd dataframe has {nrow(df.kmd)} rows, and {length(unique(df.kmd$HS_num))} unique homologous series.\n
+  This means there are no homologous series detected in the sample.\n
+  view the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_HS_series.csv for more information."))
+}
+
+
 df.kmd <- KMD_filter(df.kmd,
               form_unit= form_unit, 
               thr_dmz = thr_dmz, 
