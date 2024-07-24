@@ -5,25 +5,8 @@
 ## Date: 2024-03-05
 ## Author: Amergin McDavid and Boris Droz @ Oregon state University 
 ## Modified by Peter Bright 2024-07-24
-##
-## Description:
-###############
-## Performed KMD from a feature list
-## modified version of the KMD function python code https://github.com/JonZwe/PFAScreen
-# ---- first need to create two folder named: "input" and "output" in your working directory
-
-## Reference
-## Zweigle, J.; et al. Anal. Bioanal. Chem. 2023. https://doi.org/10.1007/s00216-023-05070-2.
-
 ###############################################################################
-### https://rdrr.io/github/rformassspectrometry/MetaboCoreUtils/
-############ KMD - 
-# install.packages("remotes")
-# remotes::install_github("rformassspectrometry/MetaboCoreUtils", force = TRUE)
-###############################################################################
-## Parameter
-############
-# library
+## libraries and setup (See bottom of code for more first time set up instructions)
 library(MetaboCoreUtils)
 library(data.table)
 library(magrittr)
@@ -31,18 +14,15 @@ library(purrr)
 library(dplyr)
 library(glue)
 workdir <- getwd()
-
 ###Run the KMD function stored in separate R script called "func_KMDv3.1.R"
 source(paste(workdir,"/func_KMDv3.1.R",sep=""))
-
-
-
+###############################################################################
+## Parameters to Change Here
 ## Input data
 sample.list <- "sample_list_KMD.csv"
 feat.files <- "featureGroupsXCMS.txt"# is an input but is on an output folder
 
-# match suspect list
-# fn.susp.list <- "C:/Users/drozditb/Documents/KMD Request 01282024/input/KMD_CF2_standard_list.csv"
+# suspect list to match features to
 fn.susp.list <- glue("{workdir}/input/KMD_CF2_neg_SuspectList_2024-07-19.csv")
 
 #################################################
@@ -293,7 +273,7 @@ for (i in 1:length(unique(matched_rows$HS_num)))
        pos=4, 
        font = 2,
        cex=0.85,  # Adjust text size as needed
-       col="black",
+       col=col.l[matched_rows$HS_num == i],
        bg="white")  # Background color for readability
 
    # Plot lines
@@ -356,3 +336,18 @@ legend.col(col = col.ramp, lev = matched_rows$ret/60, ylabel=" RT (min)")
 box()
 
 dev.off() }
+
+## Description:
+###############
+## Performed KMD from a feature list
+## modified version of the KMD function python code https://github.com/JonZwe/PFAScreen
+# ---- first need to create two folder named: "input" and "output" in your working directory
+
+## Reference
+## Zweigle, J.; et al. Anal. Bioanal. Chem. 2023. https://doi.org/10.1007/s00216-023-05070-2.
+
+###############################################################################
+### https://rdrr.io/github/rformassspectrometry/MetaboCoreUtils/
+############ KMD - 
+# install.packages("remotes")
+# remotes::install_github("rformassspectrometry/MetaboCoreUtils", force = TRUE)
