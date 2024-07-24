@@ -2,9 +2,9 @@
 ## Title: KMD Kendrick Mass Defect Calculation and Plot
 ##################################################
 ## version:4.0 batch sample
-## Date: 2024-07-24
+## Date: 2024-03-05
 ## Author: Amergin McDavid and Boris Droz @ Oregon state University 
-## Modified by Peter Bright 
+## Modified by Peter Bright 2024-07-24
 ##
 ## Description:
 ###############
@@ -31,6 +31,8 @@ library(purrr)
 library(dplyr)
 library(glue)
 workdir <- getwd()
+
+###Run the KMD function stored in separate R script called "func_KMDv3.1.R"
 source(paste(workdir,"/func_KMDv3.1.R",sep=""))
 
 
@@ -126,7 +128,7 @@ for (nd in 1: length(p.samp))
 
 ## filter the data using mass defect
 MD_range= MD.minmax ## range based on suspect list values
-MD <- df$mz - round(df$mz,0)    # mass defect of each feature
+MD <- df$mz - round2(df$mz,0)    # mass defect of each feature
 df <- df[MD>=MD_range[1]&MD<=MD_range[2],]   
 
 dmz <- calculateMass(form_unit)
@@ -251,7 +253,7 @@ pal <- colorRamp(c("blue", "green", "orange", "red"))    # 1) choose colors
 col <- rgb(pal((matched_rows$ret - min(matched_rows$ret)) / diff(range(matched_rows$ret))), max=255)  # 2) interpolate numbers for RT color scaling
 col.ramp <- rgb(pal(seq(0, 1, length.out = 20)), maxColorValue = 255)
 
-pt <-rep(c(21,22,23,24,25),round(length(unique(matched_rows$HS_num)),0)/5+1) # point
+pt <-rep(c(21,22,23,24,25),round2(length(unique(matched_rows$HS_num)),0)/5+1) # point
 
 #### Set the Target, Suspect, and Unknown series to have colored lines and point outlines
 col.l <- ifelse(is.na(matched_rows$TYPE), "red", #marker color

@@ -22,9 +22,16 @@ creat.subDir <- function (mainDir,subDir)
 }
 
 ################################################################################
-#                                   KMD FUNCTION                                  
+#                                   KMD FUNCTION                                  #
 ################################################################################
-
+round2 <- function(x, n) { # check out https://janajarecki.com/blog/r-does-not-round-2-5-to-3/
+  posneg = sign(x)
+  z = abs(x)*10^n
+  z = z + 0.5
+  z = trunc(z)
+  z = z/10^n
+  z * posneg
+}
 KMD_FUN <-function(mz,ret,int,
                    form_unit= "CF2",
                    hs_tol = 0.005, 
@@ -36,8 +43,8 @@ KMD_FUN <-function(mz,ret,int,
   
   # Calculate KMD
   dmz <- calculateMass(form_unit)
-  km <- mz *round(dmz,0)/dmz
-  kmd <- round(km,0)- km
+  km <- mz *round2(dmz,0)/dmz
+  kmd <- round2(km,0)- km
   
   # Calculate modulo: Compounds from the same 
   ## homologous series bear an identical modulo
