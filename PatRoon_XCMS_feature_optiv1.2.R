@@ -19,8 +19,7 @@
 
 ## path
 # workPath <- "D:/Patroon_NTS/"
-workPath <- "C:/Users/Peter/Documents/OSU/Fields Rotation/Computation_trainings_from_boris/KMD/KMD_7600_20240221_Spike_cal"
-#"C:/Users/drozditb/Documents/OSU_data_analysis/AFFF"
+workdir <- getwd()
 
 ## Input data -
 sample.list <- "input/sample_list_KMD.csv"
@@ -44,7 +43,7 @@ max_peakwidth.range = c(50, 140)
 # -------------------------
 library(patRoon)
 
-setwd(workPath)
+setwd(workdir)
 
 ## load data info
 df <- read.table(sample.list, sep=",",header=TRUE)

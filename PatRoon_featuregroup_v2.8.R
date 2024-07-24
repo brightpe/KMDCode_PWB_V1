@@ -18,13 +18,6 @@
 ###############################################################################
 ## Parameter
 ############
-## path
-workPath <- "C:/Users/Peter/Documents/OSU/Fields Rotation/Computation_trainings_from_boris/KMD/KMD_7600_20240221_Spike_cal/"
-
-## Input data - are the output too
-sample.list <- "sample_list_KMD.csv"
-
-###########################################################################
 ## library
 ##########
 # load patRoon profile
@@ -32,6 +25,16 @@ sample.list <- "sample_list_KMD.csv"
 library(patRoon) # v2.3.0
 # library(xcms)
 # library(dplyr)
+library(glue)
+
+## path
+workPath <- getwd()
+workdir <- glue("{workPath}/")
+
+## Enter your sample name list here
+sample.list <- "sample_list_KMD.csv"
+
+
 
 # #################################################################################################################################################
 # FUNCTION check and produced subDir folder
@@ -66,15 +69,15 @@ creat.subDir <- function (mainDir,subDir)
 # Set outpath folder
 # date <- Sys.Date()
 # folder <- paste("/",date,"_NTA_patRoon", sep="")
-# outpath <- creat.subDir(paste(workPath,"/output",sep=""), folder)
-outpath <- paste(workPath,"output",sep="")
-inpath <- paste(workPath,"input",sep="")
+# outpath <- creat.subDir(paste(workdir,"/output",sep=""), folder)
+outpath <- paste(workdir,"output",sep="")
+inpath <- paste(workdir,"input",sep="")
 
 ## load data info
 setwd(inpath)
 df <- read.csv(sample.list, sep=",",header=TRUE)
 
-setwd(workPath) # set directory
+setwd(workdir) # set directory
 
 anaInfo <- data.frame(cbind(path = df$path,
                                 analysis =df$filename,
