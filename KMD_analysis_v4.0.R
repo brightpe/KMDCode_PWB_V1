@@ -19,7 +19,7 @@ source(paste(workdir,"/func_KMDv3.1.R",sep=""))
 ###############################################################################
 ## Parameters to Change Here
 ## Input data
-sample.list <- "sample_list_KMD.csv"
+sample.list <- "sample_list_KMD_LNAPL_initial.csv"
 feat.files <- "featureGroupsXCMS.txt"# is an input but is on an output folder
 
 # suspect list to match features to
@@ -246,7 +246,7 @@ lwd.s <- ifelse(is.na(matched_rows$TYPE), 1.5,  # Handle NA cases (linewidth)
 
 
 # Set a random seed for reproducibility of label placement
-set.seed(123)
+set.seed(12)
 label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = 0.1)  # Adjust range as needed
 
 
@@ -267,7 +267,7 @@ for (i in 1:length(unique(matched_rows$HS_num)))
   y_pos <- pmin(last_point$exp_KMD + (offset * d), max(matched_rows$exp_KMD) - 0.05 * diff(range(matched_rows$exp_KMD)))
   
   #Label the series
-  text(x=x_pos-14.5, 
+  text(x=x_pos-14.5 + (offset * 1000) , 
        y=y_pos,
        labels=i,
        pos=4, 
@@ -291,7 +291,7 @@ for (i in 1:length(unique(matched_rows$HS_num)))
   # Draw line between point and label
   segments(x0=last_point$mz, 
            y0=last_point$exp_KMD, 
-           x1=x_pos, 
+           x1=x_pos + (offset * 1000), 
            y1=y_pos,
            col="black",
            lty=1)  # Line type for connection
