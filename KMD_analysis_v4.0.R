@@ -1,9 +1,10 @@
 ##################################################
-## Title: KMD Kendrick Mass Defect calculation - TRIAL
+## Title: KMD Kendrick Mass Defect Calculation and Plot
 ##################################################
 ## version:4.0 batch sample
-## Date: 2024-03-05
+## Date: 2024-07-24
 ## Author: Amergin McDavid and Boris Droz @ Oregon state University 
+## Modified by Peter Bright 
 ##
 ## Description:
 ###############
@@ -28,10 +29,11 @@ library(data.table)
 library(magrittr)
 library(purrr)
 library(dplyr)
-workdir <- dirname(rstudioapi::getSourceEditorContext()$path) # get directory work only in rstudio
+library(glue)
+workdir <- getwd()
 source(paste(workdir,"/func_KMDv3.1.R",sep=""))
 
-workdir <- "C:/Users/Peter/Documents/OSU/Fields Rotation/Computation_trainings_from_boris/KMD/KMD_7600_20240221_Spike_cal"
+
 
 ## Input data
 sample.list <- "sample_list_KMD.csv"
@@ -39,7 +41,7 @@ feat.files <- "featureGroupsXCMS.txt"# is an input but is on an output folder
 
 # match suspect list
 # fn.susp.list <- "C:/Users/drozditb/Documents/KMD Request 01282024/input/KMD_CF2_standard_list.csv"
-fn.susp.list <- "C:/Users/Peter/Documents/OSU/Fields Rotation/Computation_trainings_from_boris/KMD/KMD_7600_20240221_Spike_cal/input/KMD_CF2_neg_SuspectList_2024-07-19.csv"
+fn.susp.list <- glue("{workdir}/input/KMD_CF2_neg_SuspectList_2024-07-19.csv")
 
 #################################################
 # Mass defect filtering based on the suspect list
@@ -212,9 +214,9 @@ matched_rows <- matched_rows %>%
   ungroup()%>%
   mutate(HS_num = as.integer(factor(HS_num)))
 
-Column_order = c( "int", "exp_modulo",  "LIST_ID", "INCHIKEY", "FORMULA",
-	 "SMILES",	"NumHDonors",	"NumHAcceptors",	"TYPE", "MD",	"KMD", "modulo", "parent",	"rep_unit",	"rep_mass",	"rep_num",
-   "residual", "residual_charge",	"residual_mass","MONOISOTOPIC_MASS","HS_num", "Homologues","exp_KMD", "mz", "ret","PREFERRED_NAME", "ACRONYM")
+Column_order = c( "int", "exp_modulo", "INCHIKEY", "FORMULA",
+	 "SMILES",	"NumHDonors",	"NumHAcceptors",	"MD",	"KMD", "modulo", "parent",	"rep_unit",	"rep_mass",	"rep_num",
+   "residual", "residual_charge",	"residual_mass","MONOISOTOPIC_MASS", "TYPE",  "LIST_ID","HS_num", "Homologues","exp_KMD", "mz", "ret","PREFERRED_NAME", "ACRONYM")
 matched_rows <- matched_rows[ ,Column_order]
 
 write.table(matched_rows, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"matchsus.csv",sep=""),sep=",", 
@@ -223,11 +225,9 @@ write.table(matched_rows, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"ma
 # ################################################################################
 # ## Plot result and save result
 # ##############################
-
+# Initialize and save the file as a png
 png(filename = paste(output,"/",p.samp[nd],"_KMD_",form_unit ,"_plot.png",sep=""),width = 480, height = 480 )
-
 par(mar=c(5, 4, 2, 5) )
-
 plot(NULL,NULL,
      xlab="m/z",
      ylab= paste("KMD ",form_unit,sep=""),
@@ -237,26 +237,52 @@ plot(NULL,NULL,
 )
 
 pal <- colorRamp(c("blue", "green", "orange", "red"))    # 1) choose colors
-col <- rgb(pal((matched_rows$ret - min(matched_rows$ret)) / diff(range(matched_rows$ret))), max=255)  # 2) interpolate numbers
+col <- rgb(pal((matched_rows$ret - min(matched_rows$ret)) / diff(range(matched_rows$ret))), max=255)  # 2) interpolate numbers for RT color scaling
 col.ramp <- rgb(pal(seq(0, 1, length.out = 20)), maxColorValue = 255)
 
 pt <-rep(c(21,22,23,24,25),round(length(unique(matched_rows$HS_num)),0)/5+1) # point
 
-col.l <- ifelse(is.na(matched_rows$TYPE), "red",
+#### Set the Target, Suspect, and Unknown series to have colored lines and point outlines
+col.l <- ifelse(is.na(matched_rows$TYPE), "red", #marker color
                 ifelse(matched_rows$TYPE == "Target", "blue",
                  ifelse(matched_rows$TYPE == "Suspect", "black", "red")))
         
-lwd.s <- ifelse(is.na(matched_rows$TYPE), 1.5,  # Handle NA cases
-                 ifelse(matched_rows$TYPE == "Suspect", 2,
-                 ifelse(matched_rows$TYPE == "Target", 2, 1.5)))
+lwd.s <- ifelse(is.na(matched_rows$TYPE), 1.5,  # Handle NA cases (linewidth)
+                 ifelse(matched_rows$TYPE == "Suspect", 1.5,
+                 ifelse(matched_rows$TYPE == "Target", 1.5, 1.5)))
 
 
+# Set a random seed for reproducibility of label placement
+set.seed(123)
+label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = 0.1)  # Adjust range as needed
 
-label_offsets <- rep(0, length(unique(matched_rows$HS_num)))
+
+###Begin plotting series with a loop
 for (i in 1:length(unique(matched_rows$HS_num)))
 { d<- 1
   # Get Coordiantes
   current_data <- matched_rows[matched_rows$HS_num == i, ]
+  
+  middle_index <- ceiling(nrow(current_data) / 2)
+  last_point <- current_data[middle_index, ]
+
+  # Use random offset
+  offset <- label_offsets[i]
+
+  # Adjust label position to stay within plot limits
+  x_pos <- pmin(last_point$mz + offset, max(matched_rows$mz) - 0.05 * diff(range(matched_rows$mz)))
+  y_pos <- pmin(last_point$exp_KMD + (offset * d), max(matched_rows$exp_KMD) - 0.05 * diff(range(matched_rows$exp_KMD)))
+  
+  #Label the series
+  text(x=x_pos-14.5, 
+       y=y_pos,
+       labels=i,
+       pos=4, 
+       font = 2,
+       cex=0.85,  # Adjust text size as needed
+       col="black",
+       bg="white")  # Background color for readability
+
    # Plot lines
   lines(current_data$mz,
         current_data$exp_KMD,
@@ -267,28 +293,16 @@ for (i in 1:length(unique(matched_rows$HS_num)))
         pch=pt[i],
         lty=2)
   
-  last_point <- tail(current_data, 1)
-  
-  # Adjust label position to avoid overlap
-  offset <- label_offsets[i] + (i * 0.01)  # Incremental offset based on index
-  label_offsets[i] <- offset  # Update the last used offset
 
-  text(x=last_point$mz + offset, 
-       y=last_point$exp_KMD + (offset*d),
-       labels=i,
-       pos=4, 
-       cex=0.8,  # Adjust text size as needed
-       col="black",
-       bg="white")  # Background color for readability
 
   # Draw line between point and label
   segments(x0=last_point$mz, 
            y0=last_point$exp_KMD, 
-           x1=last_point$mz + offset, 
-           y1=last_point$exp_KMD + (offset*d),
+           x1=x_pos, 
+           y1=y_pos,
            col="black",
            lty=1)  # Line type for connection
-d<-d*(-1)
+d<-d * -1
 }
 
 legend.col <- function(col, lev, ylabel=" RT (min)"){
@@ -328,6 +342,4 @@ legend.col <- function(col, lev, ylabel=" RT (min)"){
 legend.col(col = col.ramp, lev = matched_rows$ret/60, ylabel=" RT (min)")
 box()
 
-dev.off()
-
- }
+dev.off() }
