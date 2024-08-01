@@ -24,7 +24,7 @@ feat.files <- "featureGroupsXCMS_LNAPL_JerryCan_07312024.txt"# is an input but i
 
 # suspect list to match features to
 fn.susp.list <- glue("{workdir}/input/KMD_CF2_neg_SuspectList_2024-07-19.csv")
-
+seed = 2 #Set a number here if the labelling on the output graph sucks. Random, but reproducible for a given number
 #################################################
 # Mass defect filtering based on the suspect list
 #################################################
@@ -238,7 +238,7 @@ write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"nofilt.c
 
 
   # Set a random seed for reproducibility of label placement
-  set.seed(2)
+  set.seed(seed)
   label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = (max(matched_rows$exp_KMD, na.rm=TRUE) / 3))  # Adjust range as needed max(matched_rows$Homologues, na.rm=TRUE
 
 
