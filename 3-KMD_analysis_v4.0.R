@@ -238,8 +238,8 @@ write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"nofilt.c
 
 
   # Set a random seed for reproducibility of label placement
-  set.seed(123)
-  label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = 0.1)  # Adjust range as needed
+  set.seed(2)
+  label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = (max(matched_rows$exp_KMD, na.rm=TRUE) / 3))  # Adjust range as needed max(matched_rows$Homologues, na.rm=TRUE
 
 
   ###Begin plotting series with a loop
@@ -248,25 +248,36 @@ write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"nofilt.c
     # Get Coordiantes
     current_data <- matched_rows[matched_rows$HS_num == i, ]
     
-    middle_index <- ceiling(nrow(current_data) / 2)
+    middle_index <- ceiling(nrow(current_data) / 5)
     last_point <- current_data[middle_index, ]
 
     # Use random offset
     offset <- label_offsets[i]
 
     # Adjust label position to stay within plot limits
-    x_pos <- pmin(last_point$mz + offset, max(matched_rows$mz) - 0.05 * diff(range(matched_rows$mz)))
-    y_pos <- pmin(last_point$exp_KMD + (offset * d), max(matched_rows$exp_KMD) - 0.05 * diff(range(matched_rows$exp_KMD)))
+    x_pos <- pmin(last_point$mz + offset, max(matched_rows$mz))
+    y_pos <- pmin(last_point$exp_KMD + (offset * d), max(matched_rows$exp_KMD))
     
     #Label the series
-    text(x=x_pos-14.5, 
+    text(x=x_pos-(min(matched_rows$mz)/16), 
         y=y_pos,
         labels=i,
         pos=4, 
         font = 2,
-        cex=0.85,  # Adjust text size as needed
+        cex=1.0,  # Adjust text size as needed
         col=col.l[matched_rows$HS_num == i],
         bg="white")  # Background color for readability
+
+
+    # Draw line between point and label
+    segments(x0=last_point$mz, 
+            y0=last_point$exp_KMD, 
+            x1=x_pos, 
+            y1=y_pos,
+            col="black",
+            lty=1)  # Line type for connection
+
+
 
     # Plot lines
     lines(current_data$mz,
@@ -280,13 +291,7 @@ write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"nofilt.c
     
 
 
-    # Draw line between point and label
-    segments(x0=last_point$mz, 
-            y0=last_point$exp_KMD, 
-            x1=x_pos, 
-            y1=y_pos,
-            col="black",
-            lty=1)  # Line type for connection
+
   d<-d * -1
   }
 
@@ -337,6 +342,7 @@ else {
     print(glue("\n\nThe {p.samp[nd]} kmd dataframe has {nrow(df.kmd)} rows, and {length(unique(df.kmd$HS_num))} unique homologues.\nThis means there are no homologous series detected in the sample.\nView the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_H_series.csv for more information."))
   }
     }
+print('===============Code Finished===============')
 ## Description:
 ###############
 ## Performed KMD from a feature list
