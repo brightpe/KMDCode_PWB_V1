@@ -19,8 +19,8 @@ source(paste(workdir,"/func_KMDv3.1.R",sep=""))
 ###############################################################################
 ## Parameters to Change Here
 ## Input data
-sample.list <- "sample_list_KMD.csv"
-feat.files <- "featureGroupsXCMS.txt"# is an input but is on an output folder
+sample.list <- "sample_list_KMD_LNAPL_and_JerryCan_1.csv"
+feat.files <- "featureGroupsXCMS_LNAPL_JerryCan_07312024.txt"# is an input but is on an output folder
 
 # suspect list to match features to
 fn.susp.list <- glue("{workdir}/input/KMD_CF2_neg_SuspectList_2024-07-19.csv")
@@ -35,14 +35,14 @@ MD.minmax <-c(-0.49,0.50) # based on the merge suspect list (OCDE,NIST,NORMAN,2E
 ## Kendrick Mass Defect (KMD) function parameter
 ################################################
 
-form_unit <- "CF2" #base unit
+form_unit <- "CF2" #base unit C2F4
 mz_acc <- 5 # mz accurency (ppm) of the HR MS used to set 
              # Mass tolerance for homologous series (Da)
               # capture what is lower than this diff
               # high value increase the number of peak in the same HS
               # 0.005 Da is the default parameter in FindPFAS
               # should be smaller than Condition for suspect match list
-int_tresh <- 500 # intensity or area count threshold 
+int_tresh <- 10 # intensity or area count threshold 
 thr_dmz = 10 # threshold window for mz filtering
               # error associate to each mz form same HS serie
 n_min <- 3 # number minimal to consider one HS
@@ -124,219 +124,219 @@ write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"nofilt.c
             append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
 
 
-if (nrow(df.kmd) == length(unique(df.kmd$HS_num))) {
-  write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_HS_series.csv",sep=""),sep=",", 
-            append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
-            
-  stop(glue("\nThe df.kmd dataframe has {nrow(df.kmd)} rows, and {length(unique(df.kmd$HS_num))} unique homologous series.\n
-  This means there are no homologous series detected in the sample.\n
-  view the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_series.csv for more information."))
-}
+  if ((any(table(df.kmd$HS_num) > 3))) {
 
+  df.kmd <- KMD_filter(df.kmd,
+                form_unit= form_unit, 
+                thr_dmz = thr_dmz, 
+                n_min= n_min)
 
-df.kmd <- KMD_filter(df.kmd,
-              form_unit= form_unit, 
-              thr_dmz = thr_dmz, 
-              n_min= n_min)
+  ###############################################################################
+  ## Match with suspect list
+  ##################################################################################################original
 
-###############################################################################
-## Match with suspect list
-##################################################################################################original
+  # Initialize matched_rows with the correct number of columns and column names
+  matched_rows <- cbind(df.kmd, matrix(NA, nrow = nrow(df.kmd), ncol = ncol(df.susp.list)))
+  names(matched_rows) <- c(names(df.kmd), names(df.susp.list))
 
-# Initialize matched_rows with the correct number of columns and column names
-matched_rows <- cbind(df.kmd, matrix(NA, nrow = nrow(df.kmd), ncol = ncol(df.susp.list)))
-names(matched_rows) <- c(names(df.kmd), names(df.susp.list))
+  # Rename specific columns if needed
+  names(matched_rows)[c(4, 5)] <- c("exp_modulo", "exp_KMD")
 
-# Rename specific columns if needed
-names(matched_rows)[c(4, 5)] <- c("exp_modulo", "exp_KMD")
+  # Ensure tolerance is defined
+  if (missing(tolerance) || is.na(tolerance)) {
+    stop("Tolerance value is missing or NA")
+  }
 
-# Ensure tolerance is defined
-if (missing(tolerance) || is.na(tolerance)) {
-  stop("Tolerance value is missing or NA")
-}
-
-# Loop through 'mz' values from the suspect list
-for (i in 1:nrow(df.susp.list)) {
-  mz_val <- df.susp.list$MONOISOTOPIC_MASS[i]
-  
-  # Calculate score
-  cond1 <- df.kmd$mz - mz_val
-  df.kmd$score <- sqrt(cond1^2)
-  
-  # Filter out rows with NA in mz or score
-  df.kmd <- df.kmd[!is.na(df.kmd$mz) & !is.na(df.kmd$score), ]
-  
-  # Calculate condition
-  df.kmd$cond <- abs(df.kmd$mz - mz_val) <= tolerance / 1000
-  
-  # Check if any condition is met
-  if (any(!is.na(df.kmd$cond)) && any(df.kmd$cond, na.rm = TRUE)) {
-    min_row_pos <- which.min(df.kmd$score[df.kmd$cond])
-    min_row_pos <- which(df.kmd$cond)[min_row_pos]
+  # Loop through 'mz' values from the suspect list
+  for (i in 1:nrow(df.susp.list)) {
+    mz_val <- df.susp.list$MONOISOTOPIC_MASS[i]
     
-    # Ensure the row indices are within bounds
-    if (min_row_pos <= nrow(matched_rows)) {
-      # Debugging prints to verify indices
-      start_col <- ncol(df.kmd) -1 ####Change here if columns names and values are mismatched in output
-      end_col <- (ncol(df.kmd) + ncol(df.susp.list)) -2 ####Change here if columns names and values are mismatched in output
-      # print(paste("Matching row:", min_row_pos))
-      # print(paste("Assigning columns from", start_col, "to", end_col))
+    # Calculate score
+    cond1 <- df.kmd$mz - mz_val
+    df.kmd$score <- sqrt(cond1^2)
+    
+    # Filter out rows with NA in mz or score
+    df.kmd <- df.kmd[!is.na(df.kmd$mz) & !is.na(df.kmd$score), ]
+    
+    # Calculate condition
+    df.kmd$cond <- abs(df.kmd$mz - mz_val) <= tolerance / 1000
+    
+    # Check if any condition is met
+    if (any(!is.na(df.kmd$cond)) && any(df.kmd$cond, na.rm = TRUE)) {
+      min_row_pos <- which.min(df.kmd$score[df.kmd$cond])
+      min_row_pos <- which(df.kmd$cond)[min_row_pos]
       
-      # Ensure correct number of columns are assigned
-      if ((end_col - start_col + 1) == ncol(df.susp.list)) {
-        matched_rows[min_row_pos, start_col:end_col] <- df.susp.list[i, ]
-      } else {
-        stop("Column index mismatch: check the indices.")
+      # Ensure the row indices are within bounds
+      if (min_row_pos <= nrow(matched_rows)) {
+        # Debugging prints to verify indices
+        start_col <- ncol(df.kmd) -1 ####Change here if columns names and values are mismatched in output
+        end_col <- (ncol(df.kmd) + ncol(df.susp.list)) -2 ####Change here if columns names and values are mismatched in output
+        # print(paste("Matching row:", min_row_pos))
+        # print(paste("Assigning columns from", start_col, "to", end_col))
+        
+        # Ensure correct number of columns are assigned
+        if ((end_col - start_col + 1) == ncol(df.susp.list)) {
+          matched_rows[min_row_pos, start_col:end_col] <- df.susp.list[i, ]
+        } else {
+          stop("Column index mismatch: check the indices.")
+        }
       }
     }
   }
-}
-# Define a function to check if a vector is strictly increasing
-increasing_RT <- function(x) {
-  all(diff(x) > 0)
-}
-increasing_MZ <- function(x) {
-  all(diff(x) >= 12.0) #Homologous series must lose a carbon, 12
-}
-
-# Filter dataframe
-matched_rows <- matched_rows %>%
-  group_by(HS_num) %>%
-  filter(increasing_RT(ret)) %>%
-  filter(increasing_MZ(mz)) %>%
-  ungroup()%>%
-  mutate(HS_num = as.integer(factor(HS_num)))
-
-Column_order = c( "int", "exp_modulo", "INCHIKEY", "FORMULA",
-	 "SMILES",	"NumHDonors",	"NumHAcceptors",	"MD",	"KMD", "modulo", "parent",	"rep_unit",	"rep_mass",	"rep_num",
-   "residual", "residual_charge",	"residual_mass","MONOISOTOPIC_MASS", "TYPE",  "LIST_ID","HS_num", "Homologues","exp_KMD", "mz", "ret","PREFERRED_NAME", "ACRONYM")
-matched_rows <- matched_rows[ ,Column_order]
-
-write.table(matched_rows, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"matchsus.csv",sep=""),sep=",", 
-            append=FALSE, row.names=FALSE,col.names=TRUE, quote=TRUE)
-
-# ################################################################################
-# ## Plot result and save result
-# ##############################
-# Initialize and save the file as a png
-png(filename = paste(output,"/",p.samp[nd],"_KMD_",form_unit ,"_plot.png",sep=""),width = 480, height = 480 )
-par(mar=c(5, 4, 2, 5) )
-plot(NULL,NULL,
-     xlab="m/z",
-     ylab= paste("KMD ",form_unit,sep=""),
-     las=1,
-     xlim = c(min(matched_rows$mz),max(matched_rows$mz)),
-     ylim = c(min(matched_rows$exp_KMD),max(matched_rows$exp_KMD))
-)
-
-pal <- colorRamp(c("blue", "green", "orange", "red"))    # 1) choose colors
-col <- rgb(pal((matched_rows$ret - min(matched_rows$ret)) / diff(range(matched_rows$ret))), max=255)  # 2) interpolate numbers for RT color scaling
-col.ramp <- rgb(pal(seq(0, 1, length.out = 20)), maxColorValue = 255)
-
-pt <-rep(c(21,22,23,24,25),round2(length(unique(matched_rows$HS_num)),0)/5+1) # point
-
-#### Set the Target, Suspect, and Unknown series to have colored lines and point outlines
-col.l <- ifelse(is.na(matched_rows$TYPE), "red", #marker color
-                ifelse(matched_rows$TYPE == "Target", "blue",
-                 ifelse(matched_rows$TYPE == "Suspect", "black", "red")))
-        
-lwd.s <- ifelse(is.na(matched_rows$TYPE), 1.5,  # Handle NA cases (linewidth)
-                 ifelse(matched_rows$TYPE == "Suspect", 1.5,
-                 ifelse(matched_rows$TYPE == "Target", 1.5, 1.5)))
-
-
-# Set a random seed for reproducibility of label placement
-set.seed(123)
-label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = 0.1)  # Adjust range as needed
-
-
-###Begin plotting series with a loop
-for (i in 1:length(unique(matched_rows$HS_num)))
-{ d<- 1
-  # Get Coordiantes
-  current_data <- matched_rows[matched_rows$HS_num == i, ]
-  
-  middle_index <- ceiling(nrow(current_data) / 2)
-  last_point <- current_data[middle_index, ]
-
-  # Use random offset
-  offset <- label_offsets[i]
-
-  # Adjust label position to stay within plot limits
-  x_pos <- pmin(last_point$mz + offset, max(matched_rows$mz) - 0.05 * diff(range(matched_rows$mz)))
-  y_pos <- pmin(last_point$exp_KMD + (offset * d), max(matched_rows$exp_KMD) - 0.05 * diff(range(matched_rows$exp_KMD)))
-  
-  #Label the series
-  text(x=x_pos-14.5, 
-       y=y_pos,
-       labels=i,
-       pos=4, 
-       font = 2,
-       cex=0.85,  # Adjust text size as needed
-       col=col.l[matched_rows$HS_num == i],
-       bg="white")  # Background color for readability
-
-   # Plot lines
-  lines(current_data$mz,
-        current_data$exp_KMD,
-        type="b",
-        col=col.l[matched_rows$HS_num == i],
-        lwd=lwd.s[matched_rows$HS_num == i],
-        bg=col[matched_rows$HS_num == i],
-        pch=pt[i],
-        lty=2)
-  
-
-
-  # Draw line between point and label
-  segments(x0=last_point$mz, 
-           y0=last_point$exp_KMD, 
-           x1=x_pos, 
-           y1=y_pos,
-           col="black",
-           lty=1)  # Line type for connection
-d<-d * -1
-}
-
-legend.col <- function(col, lev, ylabel=" RT (min)"){
-  
-  opar <- par
-  n <- length(col)
-  bx <- par("usr")
-  
-  box.cx <- c(bx[2] + (bx[2] - bx[1]) / 1000,
-              bx[2] + (bx[2] - bx[1]) / 1000 + (bx[2] - bx[1]) / 50)
-  box.cy <- c(bx[3], bx[3])
-  box.sy <- (bx[4] - bx[3]) / n
-  
-  xx <- rep(box.cx, each = 2)
-  
-  par(xpd = TRUE)
-  for(i in 1:n){
-    
-    yy <- c(box.cy[1] + (box.sy * (i - 1)),
-            box.cy[1] + (box.sy * (i)),
-            box.cy[1] + (box.sy * (i)),
-            box.cy[1] + (box.sy * (i - 1)))
-    polygon(xx, yy, col = col[i], border = col[i])
-    
+  # Define a function to check if a vector is strictly increasing
+  increasing_RT <- function(x) {
+    all(diff(x) > 0)
   }
-  par(new = TRUE)
-  plot(0, 0, type = "n",
-       ylim = c(min(lev), max(lev)),
-       yaxt = "n", ylab = "",
-       xaxt = "n", xlab = "",
-       frame.plot = FALSE)
-  axis(side = 4, las = 2, tick = TRUE)
-  mtext(ylabel, side=4, line=3, cex.lab=1,las=0)
-  
-  par <- opar
-}
-legend.col(col = col.ramp, lev = matched_rows$ret/60, ylabel=" RT (min)")
-box()
+  increasing_MZ <- function(x) {
+    all(diff(x) >= 12.0) #Homologous series must lose a carbon, 12
+  }
 
-dev.off() }
+  # Filter dataframe
+  matched_rows <- matched_rows %>%
+    group_by(HS_num) %>%
+    filter(increasing_RT(ret)) %>%
+    filter(increasing_MZ(mz)) %>%
+    ungroup()%>%
+    mutate(HS_num = as.integer(factor(HS_num)))
 
+  Column_order = c( "int", "exp_modulo", "INCHIKEY", "FORMULA",
+    "SMILES",	"NumHDonors",	"NumHAcceptors",	"MD",	"KMD", "modulo", "parent",	"rep_unit",	"rep_mass",	"rep_num",
+    "residual", "residual_charge",	"residual_mass","MONOISOTOPIC_MASS", "TYPE",  "LIST_ID","HS_num", "Homologues","exp_KMD", "mz", "ret","PREFERRED_NAME", "ACRONYM")
+  matched_rows <- matched_rows[ ,Column_order]
+
+  write.table(matched_rows, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"matchsus.csv",sep=""),sep=",", 
+              append=FALSE, row.names=FALSE,col.names=TRUE, quote=TRUE)
+
+  # ################################################################################
+  # ## Plot result and save result
+  # ##############################
+  # Initialize and save the file as a png
+  png(filename = paste(output,"/",p.samp[nd],"_KMD_",form_unit ,"_plot.png",sep=""),width = 480, height = 480 )
+  par(mar=c(5, 4, 2, 5) )
+  plot(NULL,NULL,
+      xlab="m/z",
+      ylab= paste("KMD ",form_unit,sep=""),
+      las=1,
+      xlim = c(min(matched_rows$mz),max(matched_rows$mz)),
+      ylim = c(min(matched_rows$exp_KMD),max(matched_rows$exp_KMD))
+  )
+
+  pal <- colorRamp(c("blue", "green", "orange", "red"))    # 1) choose colors
+  col <- rgb(pal((matched_rows$ret - min(matched_rows$ret)) / diff(range(matched_rows$ret))), max=255)  # 2) interpolate numbers for RT color scaling
+  col.ramp <- rgb(pal(seq(0, 1, length.out = 20)), maxColorValue = 255)
+
+  pt <-rep(c(21,22,23,24,25),round2(length(unique(matched_rows$HS_num)),0)/5+1) # point
+
+  #### Set the Target, Suspect, and Unknown series to have colored lines and point outlines
+  col.l <- ifelse(is.na(matched_rows$TYPE), "red", #marker color
+                  ifelse(matched_rows$TYPE == "Target", "blue",
+                  ifelse(matched_rows$TYPE == "Suspect", "black", "red")))
+          
+  lwd.s <- ifelse(is.na(matched_rows$TYPE), 1.5,  # Handle NA cases (linewidth)
+                  ifelse(matched_rows$TYPE == "Suspect", 1.5,
+                  ifelse(matched_rows$TYPE == "Target", 1.5, 1.5)))
+
+
+  # Set a random seed for reproducibility of label placement
+  set.seed(123)
+  label_offsets <- runif(length(unique(matched_rows$HS_num)), min = 0.00, max = 0.1)  # Adjust range as needed
+
+
+  ###Begin plotting series with a loop
+  for (i in 1:length(unique(matched_rows$HS_num)))
+  { d<- 1
+    # Get Coordiantes
+    current_data <- matched_rows[matched_rows$HS_num == i, ]
+    
+    middle_index <- ceiling(nrow(current_data) / 2)
+    last_point <- current_data[middle_index, ]
+
+    # Use random offset
+    offset <- label_offsets[i]
+
+    # Adjust label position to stay within plot limits
+    x_pos <- pmin(last_point$mz + offset, max(matched_rows$mz) - 0.05 * diff(range(matched_rows$mz)))
+    y_pos <- pmin(last_point$exp_KMD + (offset * d), max(matched_rows$exp_KMD) - 0.05 * diff(range(matched_rows$exp_KMD)))
+    
+    #Label the series
+    text(x=x_pos-14.5, 
+        y=y_pos,
+        labels=i,
+        pos=4, 
+        font = 2,
+        cex=0.85,  # Adjust text size as needed
+        col=col.l[matched_rows$HS_num == i],
+        bg="white")  # Background color for readability
+
+    # Plot lines
+    lines(current_data$mz,
+          current_data$exp_KMD,
+          type="b",
+          col=col.l[matched_rows$HS_num == i],
+          lwd=lwd.s[matched_rows$HS_num == i],
+          bg=col[matched_rows$HS_num == i],
+          pch=pt[i],
+          lty=2)
+    
+
+
+    # Draw line between point and label
+    segments(x0=last_point$mz, 
+            y0=last_point$exp_KMD, 
+            x1=x_pos, 
+            y1=y_pos,
+            col="black",
+            lty=1)  # Line type for connection
+  d<-d * -1
+  }
+
+  legend.col <- function(col, lev, ylabel=" RT (min)"){
+    
+    opar <- par
+    n <- length(col)
+    bx <- par("usr")
+    
+    box.cx <- c(bx[2] + (bx[2] - bx[1]) / 1000,
+                bx[2] + (bx[2] - bx[1]) / 1000 + (bx[2] - bx[1]) / 50)
+    box.cy <- c(bx[3], bx[3])
+    box.sy <- (bx[4] - bx[3]) / n
+    
+    xx <- rep(box.cx, each = 2)
+    
+    par(xpd = TRUE)
+    for(i in 1:n){
+      
+      yy <- c(box.cy[1] + (box.sy * (i - 1)),
+              box.cy[1] + (box.sy * (i)),
+              box.cy[1] + (box.sy * (i)),
+              box.cy[1] + (box.sy * (i - 1)))
+      polygon(xx, yy, col = col[i], border = col[i])
+      
+    }
+    par(new = TRUE)
+    plot(0, 0, type = "n",
+        ylim = c(min(lev), max(lev)),
+        yaxt = "n", ylab = "",
+        xaxt = "n", xlab = "",
+        frame.plot = FALSE)
+    axis(side = 4, las = 2, tick = TRUE)
+    mtext(ylabel, side=4, line=3, cex.lab=1,las=0)
+    
+    par <- opar
+  }
+  legend.col(col = col.ramp, lev = matched_rows$ret/60, ylabel=" RT (min)")
+  box()
+
+  dev.off() }
+
+
+else {
+    write.table(df.kmd, file=paste(output,"/",p.samp[nd],"_KMD_",form_unit,"_no_H_series.csv",sep=""),sep=",", 
+              append=FALSE, row.names=FALSE,col.names=TRUE, quote=FALSE)
+              
+    print(glue("\n\nThe {p.samp[nd]} kmd dataframe has {nrow(df.kmd)} rows, and {length(unique(df.kmd$HS_num))} unique homologues.\nThis means there are no homologous series detected in the sample.\nView the df.kmd dataframe through the terminal by typing 'df.kmd' directly or view the no_H_series.csv for more information."))
+  }
+    }
 ## Description:
 ###############
 ## Performed KMD from a feature list
