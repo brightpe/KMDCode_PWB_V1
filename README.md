@@ -28,14 +28,11 @@ Citing
 
 The current workflow combine/translate divers code from the following sources
 
-Peak picking with XCMS: 
-Helmus, R.; van de Velde, B.; Brunner, A. M.; ter Laak, T. L.; van Wezel, A. P.; Schymanski, E. L. patRoon 2.0: Improved non-target analysis workflows including automated transformation product screening. Journal of Open Source Software 2022, 7 (71), 4029. [DOI: 10.21105/joss.04029](https://doi.org/10.21105/joss.04029); [github patRoon](https://github.com/rickhelmus/patRoon).
+Peak picking with XCMS:  Helmus, R.; van de Velde, B.; Brunner, A. M.; ter Laak, T. L.; van Wezel, A. P.; Schymanski, E. L. patRoon 2.0: Improved non-target analysis workflows including automated transformation product screening. Journal of Open Source Software 2022, 7 (71), 4029. [DOI: 10.21105/joss.04029](https://doi.org/10.21105/joss.04029); [github patRoon](https://github.com/rickhelmus/patRoon).
 
-KMD analysis:
-Zweigle, J.; Bugsel, B.; Fabregat-Palau, J.; Zwiener, C. PFDeltaScreen - an open-source tool for automated PFAS feature prioritization in non-target HRMS data. Anal. Bioanal. Chem. 2023, 16 (2), 349–362. [DOI: 10.1007/s00216-023-05070-2](https://doi.org/10.1007/s00216-023-05070-2); [github PFAScreen](https://github.com/JonZwe/PFAScreen/blob/main/KMD_analysis.py)
+KMD analysis:  Zweigle, J.; Bugsel, B.; Fabregat-Palau, J.; Zwiener, C. PFDeltaScreen - an open-source tool for automated PFAS feature prioritization in non-target HRMS data. Anal. Bioanal. Chem. 2023, 16 (2), 349–362. [DOI: 10.1007/s00216-023-05070-2](https://doi.org/10.1007/s00216-023-05070-2); [github PFAScreen](https://github.com/JonZwe/PFAScreen/blob/main/KMD_analysis.py)
 
-Theoretical calculation of the residual based on the formula:
-https://github.com/usnistgov/NISTPFAS/tree/main/suspectlist/fn/calculate_residual.R
+Theoretical calculation of the residual based on the formula:  [gitHub NIST](https://github.com/usnistgov/NISTPFAS/tree/main/suspectlist/fn/calculate_residual.R)
 
 -------------------------------------------------------
 This is a collaborative repository based on the repository by EcoChem-OSU/KMD at https://github.com/EcoChem-OSU/KMD.git
