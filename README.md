@@ -6,17 +6,17 @@ Perfomed Kendrick Mass Defect (KMD) analysis from a feature list previously extr
 The workflow combine existing code (step) (see below in reference section) that might be run independently.
 
 The step (scripts) are the following:  
-1-PatRoon_XCMS_feature_opti: optimized the parameter for XCMS peak picking  
-2-PatRoon_featuregroup: Peak picking script prior to KMD analysis  
-3-KMD_analysis: KMD analysis script   
-creat_KMD_susp_list: create a specific KMD suspect list to match the KMD result with some suspect and help the identification of unknow.  
+- 1-PatRoon_XCMS_feature_opti: optimized the parameter for XCMS peak picking  
+- 2-PatRoon_featuregroup: Peak picking script prior to KMD analysis  
+- 3-KMD_analysis: KMD analysis script   
+- creat_KMD_susp_list: create a specific KMD suspect list to match the KMD result with some suspect and help the identification of unknow.  
 > [!CAUTION]  
-> **DO NOT CONSIDER THIS AS A TRUE SUSPECT SCREENING STEP**
+> **DO NOT CONSIDER the creat_KMD_susp_list match as a suspect screening step**
 
 
 Dependency
 ----------------
-R(>=4.3.1)
+R(>=4.3.1)  
 patRoon(>=2.3.0)
 
 Getting started
@@ -44,7 +44,6 @@ The full work flow is described in:
 coming soon
 
 Other examples using the workflow include:  
-
 
 
 License
