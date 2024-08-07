@@ -16,7 +16,7 @@ The step (scripts) are the following:
 
 Dependency
 ----------------
-R(>=4.3.1)  
+R(>=4.3.1)    
 patRoon(>=2.3.0)
 
 Getting started
