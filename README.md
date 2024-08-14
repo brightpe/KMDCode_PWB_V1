@@ -14,10 +14,19 @@ The step (scripts) are the following:
 > **DO NOT CONSIDER the creat_KMD_susp_list match as a suspect screening step**
 
 
-Dependency
+Dependency and installation
 ----------------
 R(>=4.3.1)    
-patRoon(>=2.3.0)
+patRoon(>=2.3.0) Check [patron ahndbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
+
+MetaboCoreUtils. To install this package, start R and enter:  
+
+##
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("MetaboCoreUtils")
+
 
 Getting started
 ----------------
