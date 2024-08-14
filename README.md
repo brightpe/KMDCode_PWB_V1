@@ -21,12 +21,12 @@ patRoon(>=2.3.0) Check [patron ahndbook](https://rickhelmus.github.io/patRoon/ha
 
 MetaboCoreUtils. To install this package, start R and enter:  
 
-##
+``` r
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 BiocManager::install("MetaboCoreUtils")
-
+```
 
 Getting started
 ----------------
