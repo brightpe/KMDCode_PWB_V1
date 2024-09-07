@@ -2,22 +2,26 @@
 -----------------------------------------------------------------------------------
 Description
 -----------
-Perfomed Kendrick Mass Defect (KMD) analysis from a feature list previously extracted from a peak picking algorithm (e.g., XCMS)
-The workflow combine existing code (step) (see below in reference section) that might be run independently.
+This code performs a Kendrick Mass Defect (KMD) analysis of user input mass spec data by creating a feature list via the XCMS peak picking algorithm
+The workflow combines existing code (3 steps, see below in reference section) that might be run independently.
 
-The step (scripts) are the following:  
-- 1-PatRoon_XCMS_feature_opti: optimized the parameter for XCMS peak picking  
-- 2-PatRoon_featuregroup: Peak picking script prior to KMD analysis  
-- 3-KMD_analysis: KMD analysis script   
-- creat_KMD_susp_list: create a specific KMD suspect list to match the KMD result with some suspect and help the identification of unknow.  
+The steps (3 individual scripts) are the following:  
+- 1-PatRoon_XCMS_feature_opti: optimizes the parameters used for XCMS peak picking  
+- 2-PatRoon_featuregroup: Performs peak picking using XCMS (to fascilitate KMD analysis in step 3)  
+- 3-KMD_analysis: Scan featurelist for homologous series (perform a KMD analysis)
+- creat_KMD_susp_list: create a specific suspect list to match wtih the KMD result and help the identification of unknown exact masses.  
 > [!CAUTION]  
-> **DO NOT CONSIDER the creat_KMD_susp_list match as a suspect screening step**
+> **DO NOT CONSIDER the creat_KMD_susp_list match as a comprehensive suspect screening step**
 
 
 Dependency and installation
 ----------------
 R(>=4.3.1)    
-patRoon(>=2.3.0) Check [patron ahndbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
+
+RTools 
+
+patRoon(>=2.3.0) Check [patron handbook](https://rickhelmus.github.io/patRoon/handbook_bd/index.html)
+**Optional**: Text editor such as Rstudio or Visual Studio Code 
 
 MetaboCoreUtils. To install this package, start R and enter:  
 
@@ -30,8 +34,10 @@ BiocManager::install("MetaboCoreUtils")
 
 Getting started
 ----------------
-1.
-2.
+1. Download the codes to your local machine, create a directory (folder), and put all codes in the directory
+2. Create two folders in your directory called "input" and "ouptut"
+3. In the input folder, put: (1) a sample list (default name is sample_list_KMD), (2) your suspect list (see downloads for: ), (3) all datafiles converted from .raw file format to .mzXML (can convert using MSConvert or another software)
+4. Run the scripts in order, taking care to update the parameters in script 2 (2-PatRoon_featuregroup) with the optimized peak picking parameters identified in script 1 (1-PatRoon_XCMS_feature_opti), and to have the featurelist generated from script 2 in the output folder before running script 3 (3-KMD_analysis)
 
 
 References
