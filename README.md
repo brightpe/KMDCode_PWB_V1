@@ -1,15 +1,19 @@
-# Kendrick Mass Defect Analysis for High-Resolution mass spectrometry data
+# Kendrick Mass Defect Analysis for High-Resolution Mass Spectrometry data
 -----------------------------------------------------------------------------------
 Description
 -----------
-This code performs a Kendrick Mass Defect (KMD) analysis of user input mass spec data by creating a feature list via the XCMS peak picking algorithm
-The workflow combines existing code (3 steps, see below in reference section) that might be run independently.
+This code performs a Kendrick Mass Defect (KMD) analysis of user input mass spectral data by creating a feature list via the XCMS peak picking algorithm.
+The workflow includes generating a suspect list, generating a feature list, and subsequently creating a KMD plot. 
 
-The steps (3 individual scripts) are the following:  
-- 1-PatRoon_XCMS_feature_opti: optimizes the parameters used for XCMS peak picking  
-- 2-PatRoon_featuregroup: Performs peak picking using XCMS (to fascilitate KMD analysis in step 3)  
-- 3-KMD_analysis: Scan featurelist for homologous series (perform a KMD analysis)
-- creat_KMD_susp_list: create a specific suspect list to match wtih the KMD result and help the identification of unknown exact masses.  
+Suspect List Generation:
+- Utilizes the creat_KMD_susp_list.v1 and func_calc_residual R codes.
+- Combines suspect lists from a users working directory
+- Calculates the kendrick mass and kendrick mass defect for each list member for a given neutral loss (ex: CF2, C2F4)
+
+KMD Analysis then occurs in 3 steps (3 individual scripts):  
+- 1-PatRoon_XCMS_feature_opti: Optimizes the parameters used for XCMS peak picking and featurelist generation
+- 2-PatRoon_featuregroup: Performs peak picking using XCMS and generates a featurelist from the data (to fascilitate KMD analysis in step 3)  
+- 3-KMD_analysis: Screens featurelist for overlap with the suspect list based on exact mass, scans for homologous series of the same mass defect value (KMD analysis)
 > [!CAUTION]  
 > **DO NOT CONSIDER the creat_KMD_susp_list match as a comprehensive suspect screening method. Results need to be verified**
 
@@ -34,9 +38,16 @@ BiocManager::install("MetaboCoreUtils")
 
 Getting started
 ----------------
-1. Download the codes to your local machine, create a directory (folder), and put all codes in the directory
+Suspect List Generation
+1. Download the creat_KMD_susp_list.v1 and func_calc_residual R codes, store in a folder on your local machine.
+2. In the folder, put all suspect lists that are to be combined (**See example_suspect_list.csv**)
+3. Open the creat_KMD_susp_list.v1 code, select the repeating unit to screen for (ex: CF2, C2F4), and run the code to combine the suspect lists.
+4. Output will be in the format "KMD_C2F4_neg_SuspectList_2024-07-19" where 'C2F4' is the repeating unit, 'neg' (or 'pos') reflects the polarity of the suspect list members, and 2024-07-19 is the date the list was generated.
+
+KMD Analysis:
+1. Download all codes to your local machine, create a directory (folder), and put all codes in the directory
 2. Create two folders in your directory called "input" and "ouptut"
-3. In the input folder, put: (1) a sample list (default name is sample_list_KMD), (2) your suspect list (see downloads for: ), (3) all datafiles converted from .raw file format to .mzXML (can convert using MSConvert or another software)
+3. In the input folder, put: (1) a sample list (default name is sample_list_KMD), (2) your suspect list generated previously, (3) all datafiles converted from .raw/.wiff2./etc file format to .mzXML (can convert using MSConvert or another software)
 4. Run the scripts in order, taking care to update the parameters in script 2 (2-PatRoon_featuregroup) with the optimized peak picking parameters identified in script 1 (1-PatRoon_XCMS_feature_opti), and to have the featurelist generated from script 2 in the output folder before running script 3 (3-KMD_analysis)
 
 
