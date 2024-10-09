@@ -11,7 +11,7 @@ The steps (3 individual scripts) are the following:
 - 3-KMD_analysis: Scan featurelist for homologous series (perform a KMD analysis)
 - creat_KMD_susp_list: create a specific suspect list to match wtih the KMD result and help the identification of unknown exact masses.  
 > [!CAUTION]  
-> **DO NOT CONSIDER the creat_KMD_susp_list match as a comprehensive suspect screening step**
+> **DO NOT CONSIDER the creat_KMD_susp_list match as a comprehensive suspect screening method. Results need to be verified**
 
 
 Dependency and installation
